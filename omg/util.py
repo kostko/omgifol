@@ -4,11 +4,13 @@
 """
 
 from __future__  import print_function
+
+import six
+
 from fnmatch     import fnmatchcase as wccmp
 from struct      import pack, unpack, calcsize
 from copy        import copy, deepcopy
 from collections import OrderedDict as od
-from omg         import six
 
 _pack = pack
 _unpack = unpack
