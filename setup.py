@@ -16,5 +16,6 @@ setup(
     packages=find_packages(exclude=('demo',)),
     install_requires=[
         'six>=1.10.0',
+        'tatsu>=4.2.3',
     ],
 )

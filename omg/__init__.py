@@ -31,3 +31,5 @@ from omg.wadio import *
 from omg.wad import *
 from omg.lump import *
 from omg.mapedit import *
+from omg.udmf import *
+
