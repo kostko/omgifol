@@ -148,16 +148,19 @@ class UDMFMapEditor(object):
         self.data = None
         self.index = None
 
-        self._wadio = wadio
+        # Read WAD file into memory so we don't need WadIO anymore.
+        self._wad_entries = list(wadio.entries)
+        self._wad_data = [wadio.read(index) for index in range(len(wadio.entries))]
+
         self._nodes = []
         self._meta = {}
 
     def load(self, name):
         """Load lumps from the WAD file."""
-        for index, entry in enumerate(self._wadio.entries):
+        for index, entry in enumerate(self._wad_entries):
             try:
                 # Assume current lump is a header lump. The next lump should be a TEXTMAP.
-                next_entry = self._wadio.entries[index + 1]
+                next_entry = self._wad_entries[index + 1]
                 if next_entry.name != 'TEXTMAP':
                     continue
             except IndexError:
@@ -171,11 +174,11 @@ class UDMFMapEditor(object):
             self.name = entry.name
             self.index = index
 
-            for subindex, entry in enumerate(self._wadio.entries[index:]):
+            for subindex, entry in enumerate(self._wad_entries[index:]):
                 if entry.name == 'ENDMAP':
                     break
                 elif entry.name == 'TEXTMAP':
-                    self.data = self._wadio.read(index + subindex).decode('ascii')
+                    self.data = self._wad_data[index + subindex].decode('ascii')
                 else:
                     # Ignore unknown lumps.
                     pass
@@ -208,17 +211,18 @@ class UDMFMapEditor(object):
     def save(self, filename):
         """Save map to an output WAD file."""
         output = WadIO(filename)
-        for index, entry in enumerate(self._wadio.entries):
+        for index, entry in enumerate(self._wad_entries):
             if index == self.index + 1:
                 # Replace map at specified index.
                 data = self.serialize().encode('ascii')
             else:
                 # Copy all other entries (even other maps).
-                data = self._wadio.read(index)
+                data = self._wad_data[index]
 
             output.insert(entry.name, data)
 
         output.save()
+        output.close()
 
     def get_nodes(self, type):
         """Return nodes of specific type."""
