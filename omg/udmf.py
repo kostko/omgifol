@@ -1,3 +1,5 @@
+import collections
+
 import tatsu
 
 from .wadio import WadIO
@@ -66,7 +68,9 @@ class UDMFObject(object):
     @classmethod
     def serialize_assignment(cls, key, value):
         """Serialize assignment expression."""
-        if isinstance(value, str):
+        if isinstance(value, float):
+            value = '{:.3f}'.format(value)
+        elif isinstance(value, str):
             value = '"{}"'.format(value)
         elif isinstance(value, bool):
             value = 'true' if value else 'false'
@@ -114,7 +118,7 @@ class UDMFSemantics(object):
     def block(self, ast):
         name, _, assignments, _ = ast
 
-        result = {}
+        result = collections.OrderedDict()
         for assignment in assignments:
             result.update(assignment)
 
@@ -122,7 +126,7 @@ class UDMFSemantics(object):
 
     def assignment_expr(self, ast):
         identifier, _, value, _ = ast
-        return {identifier: value}
+        return collections.OrderedDict([(identifier, value)])
 
     def keyword(self, ast):
         raise NotImplementedError("Unsupported keyword: {}".format(repr(ast)))
@@ -153,7 +157,7 @@ class UDMFMapEditor(object):
         self._wad_data = [wadio.read(index) for index in range(len(wadio.entries))]
 
         self._nodes = []
-        self._meta = {}
+        self._meta = collections.OrderedDict()
 
     def load(self, name):
         """Load lumps from the WAD file."""
